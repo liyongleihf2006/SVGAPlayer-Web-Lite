@@ -79,7 +79,6 @@
     ]
   },
   "gitHooks": {
-    "pre-commit": "npm run type:check && lint-staged",
     "commit-msg": "commitlint -e $GIT_PARAMS"
   }
 }

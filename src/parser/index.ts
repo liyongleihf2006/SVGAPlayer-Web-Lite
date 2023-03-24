@@ -13,7 +13,7 @@ const proto = Root.fromJSON(SVGA_PROTO)
 const message = proto.lookupType('com.opensource.svga.MovieEntity')
 
 function onmessage (event: { data: ParserPostMessageArgs }): void {
-  console.log('新的parser')
+  console.log('新的parser2333')
   try {
     const buffer = event.data as unknown as ArrayBuffer
     const dataHeader = new Uint8Array(buffer, 0, 4)
