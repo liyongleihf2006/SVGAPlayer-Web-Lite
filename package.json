@@ -1,5 +1,5 @@
 {
-  "name": "svga",
+  "name": "pad-svga",
   "version": "2.0.8-alpha.1",
   "description": "Lightweight SVGA Web Player",
   "main": "dist/index.cjs.min.js",
