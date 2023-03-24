@@ -103,7 +103,7 @@ const TESTCASE4 = async (): Promise<void> => {
   let svga = await db.find(url)
   console.log('db', svga)
   if (svga === undefined) {
-    const parser = new Parser({ isDisableImageBitmapShim: true })
+    const parser = new Parser()
     svga = await parser.load(url)
     await db.insert(url, svga)
   }

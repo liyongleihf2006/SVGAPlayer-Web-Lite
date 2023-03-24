@@ -1,30 +1,27 @@
-import { Video, MockWebWorker, ParserConfigOptions } from './types'
+import { Video } from './types'
 
 const INLINE_WORKER_FLAG = '#PARSER_V2_INLINE_WROKER#'
-
+function dataURLtoArraybuffer (dataurl: string): ArrayBuffer {
+  const arr = dataurl.split(',')
+  const bstr = window.atob(arr[1])
+  let mime = ((arr[0].match(/:(.*?);/)?.[1]) != null) || ''
+  if (mime === 'null') {
+    mime = ''
+  }
+  let n = bstr.length
+  const u8arr = new Uint8Array(n)
+  while ((n--) !== 0) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  return u8arr.buffer
+}
 /**
  * SVGA 下载解析器
  */
 export class Parser {
-  public worker: MockWebWorker | Worker
-  private readonly isDisableImageBitmapShim: boolean = false
-
-  constructor (options: ParserConfigOptions = {
-    isDisableWebWorker: false,
-    isDisableImageBitmapShim: false
-  }) {
-    const { isDisableWebWorker, isDisableImageBitmapShim } = options
-    if (isDisableImageBitmapShim === true) {
-      this.isDisableImageBitmapShim = isDisableImageBitmapShim
-    }
-    if (isDisableWebWorker === true) {
-      // eslint-disable-next-line no-eval
-      eval(INLINE_WORKER_FLAG)
-      if (window.SVGAParserMockWorker === undefined) throw new Error('SVGAParserMockWorker undefined')
-      this.worker = window.SVGAParserMockWorker
-    } else {
-      this.worker = new Worker(window.URL.createObjectURL(new Blob([INLINE_WORKER_FLAG])))
-    }
+  public worker: Worker
+  constructor () {
+    this.worker = new Worker(window.URL.createObjectURL(new Blob([INLINE_WORKER_FLAG])))
   }
 
   /**
@@ -36,24 +33,11 @@ export class Parser {
     if (url === undefined) throw new Error('url undefined')
     if (this.worker === undefined) throw new Error('Parser Worker not found')
     return await new Promise((resolve, reject) => {
-      if (url.indexOf('http') !== 0) {
-        const a = document.createElement('a')
-        a.href = url
-        url = a.href
+      this.worker.onmessage = ({ data }: { data: Video | Error }) => {
+        data instanceof Error ? reject(data) : resolve(data)
       }
-      const { isDisableImageBitmapShim } = this
-      const postData = { url, options: { isDisableImageBitmapShim } }
-      if (this.worker instanceof Worker) {
-        this.worker.onmessage = ({ data }: { data: Video | Error }) => {
-          data instanceof Error ? reject(data) : resolve(data)
-        }
-        this.worker.postMessage(postData)
-      } else {
-        this.worker.onmessageCallback = (data: Video | Error) => {
-          data instanceof Error ? reject(data) : resolve(data)
-        }
-        this.worker.onmessage({ data: postData })
-      }
+      const buffer = dataURLtoArraybuffer(url)
+      this.worker.postMessage(buffer, [buffer])
     })
   }
 
