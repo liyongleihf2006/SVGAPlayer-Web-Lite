@@ -13,7 +13,7 @@ const proto = Root.fromJSON(SVGA_PROTO)
 const message = proto.lookupType('com.opensource.svga.MovieEntity')
 
 function onmessage (event: { data: ParserPostMessageArgs }): void {
-  console.log('新的parser2333')
+  console.log('新的parser24444')
   try {
     const buffer = event.data as unknown as ArrayBuffer
     const dataHeader = new Uint8Array(buffer, 0, 4)
@@ -36,7 +36,7 @@ function onmessage (event: { data: ParserPostMessageArgs }): void {
       })
       promises.push(promise)
     }
-    Promise.all(promises).then(() => {
+    Promise.allSettled(promises).then(() => {
       self.postMessage(new VideoEntity(movie, images), [...imageBitmaps])
     }).catch(err => {
       throw err
